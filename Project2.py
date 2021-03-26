@@ -46,11 +46,12 @@ def get_search_links():
     soup = BeautifulSoup(r.text, 'html.parser')
     url_list = []
     tags = soup.find_all("tr")
-    for tag in tags:
+    for tag in tags[:10]:
         anchor = tag.find('a', class_ = "bookTitle")
         book_url = "https://www.goodreads.com" + anchor['href']
         url_list.append(book_url)
-
+    
+    return url_list
 
 
 def get_book_summary(book_url):
@@ -67,9 +68,18 @@ def get_book_summary(book_url):
     Make sure to strip() any newlines from the book title and number of pages.
     """
 
-    pass
-
-
+    r = requests.get(book_url)
+    soup = BeautifulSoup(r.content, 'html.parser')
+    div1 = soup.find('div', id = 'metacol')
+    title = div1.find('h1',id = "bookTitle")
+    t = title.text.strip()
+    author = div1.find('a', class_ = "authorName")
+    a = author.text.strip()
+    pages = soup.find('span', itemprop = "numberOfPages")
+    p = pages.text.strip()
+    
+    return (t, a, p)
+    
 def summarize_best_books(filepath):
     """
     Write a function to get a list of categories, book title and URLs from the "BEST BOOKS OF 2020"
@@ -119,35 +129,39 @@ def extra_credit(filepath):
 class TestCases(unittest.TestCase):
 
     # call get_search_links() and save it to a static variable: search_urls
-
+    search_urls = get_search_links()
 
     def test_get_titles_from_search_results(self):
         # call get_titles_from_search_results() on search_results.htm and save to a local variable
         t = get_titles_from_search_results('search_results.htm')
         # check that the number of titles extracted is correct (20 titles)
-
+        self.assertEqual(len(t), 20)
         # check that the variable you saved after calling the function is a list
-
+        self.assertTrue(t, list)
         # check that each item in the list is a tuple
-
+        for item in t:
+            self.assertTrue(item, type(tuple))
         # check that the first book and author tuple is correct (open search_results.htm and find it)
-
+        self.assertEqual(t[0], ("Harry Potter and the Deathly Hallows (Harry Potter, #7)", "J.K. Rowling"))
         # check that the last title is correct (open search_results.htm and find it)
-        
+        self.assertEqual(t[-1], ("Harry Potter: The Prequel (Harry Potter, #0.5)", "J.K. Rowling"))
     def test_get_search_links(self):
         # check that TestCases.search_urls is a list
-        l = get_search_links()
+        self.assertTrue(self.search_urls, list)
         # check that the length of TestCases.search_urls is correct (10 URLs)
-
+        self.assertEqual(len(self.search_urls), 10)
 
         # check that each URL in the TestCases.search_urls is a string
+        
         # check that each URL contains the correct url for Goodreads.com followed by /book/show/
         
 
     def test_get_book_summary(self):
         # create a local variable – summaries – a list containing the results from get_book_summary()
         # for each URL in TestCases.search_urls (should be a list of tuples)
-
+        summaries = []
+        for url in self.search_urls:
+            summaries.append(get_book_summary(url))
         # check that the number of book summaries is correct (10)
 
             # check that each item in the list is a tuple
@@ -160,7 +174,7 @@ class TestCases(unittest.TestCase):
 
             # check that the first book in the search has 337 pages
 
-        pass
+        
     def test_summarize_best_books(self):
         # call summarize_best_books and save it to a variable
 
