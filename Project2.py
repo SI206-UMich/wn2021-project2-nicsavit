@@ -41,8 +41,16 @@ def get_search_links():
     “https://www.goodreads.com/book/show/kdkd".
 
     """
+    url = "https://www.goodreads.com/search?q=fantasy&qid=NwUsLiA2Nc"
+    r = requests.get(url)
+    soup = BeautifulSoup(r.text, 'html.parser')
+    url_list = []
+    tags = soup.find_all("tr")
+    for tag in tags:
+        anchor = tag.find('a', class_ = "bookTitle")
+        book_url = "https://www.goodreads.com" + anchor['href']
+        url_list.append(book_url)
 
-    pass
 
 
 def get_book_summary(book_url):
@@ -128,13 +136,13 @@ class TestCases(unittest.TestCase):
         
     def test_get_search_links(self):
         # check that TestCases.search_urls is a list
-
+        l = get_search_links()
         # check that the length of TestCases.search_urls is correct (10 URLs)
 
 
         # check that each URL in the TestCases.search_urls is a string
         # check that each URL contains the correct url for Goodreads.com followed by /book/show/
-        pass
+        
 
     def test_get_book_summary(self):
         # create a local variable – summaries – a list containing the results from get_book_summary()
