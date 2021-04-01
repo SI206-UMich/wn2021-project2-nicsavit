@@ -17,7 +17,7 @@ def get_titles_from_search_results(filename):
     with open(filename) as f:
         x = f.read()
         
-    soup = BeautifulSoup(x, 'html.parser')
+    soup = BeautifulSoup(x, 'lxml')
     book_list = []
     tags = soup.find_all("tr")
     for tag in tags:
@@ -43,7 +43,7 @@ def get_search_links():
     """
     url = "https://www.goodreads.com/search?q=fantasy&qid=NwUsLiA2Nc"
     r = requests.get(url)
-    soup = BeautifulSoup(r.text, 'html.parser')
+    soup = BeautifulSoup(r.text, 'lxml')
     url_list = []
     tags = soup.find_all("tr")
     for tag in tags[:10]:
@@ -91,9 +91,22 @@ def summarize_best_books(filepath):
     ("Fiction", "The Testaments (The Handmaid's Tale, #2)", "https://www.goodreads.com/choiceawards/best-fiction-books-2020") 
     to your list of tuples.
     """
-    pass
+    with open(filepath, 'r') as f:
+        fread = f.read()
+        soup = BeautifulSoup(fread, 'html.parser')
+    tup_list = []
+    
+    cat_main = soup.find('div', class_='categoryContainer')
+    categories = soup.find_all('div', class_ = "category clearFix")
 
-
+    for category in categories:
+        c = category.find('h4', class_ = "category__copy")
+        titles_main = category.find('img', class_ = "category__winnerImage")
+        t = titles_main['alt']
+        url = category.find('a')['href']
+        tup_list.append((c.text.strip(), t, url))
+    print(tup_list)
+    return tup_list
 def write_csv(data, filename):
     """
     Write a function that takes in a list of tuples (called data, i.e. the
@@ -137,22 +150,23 @@ class TestCases(unittest.TestCase):
         # check that the number of titles extracted is correct (20 titles)
         self.assertEqual(len(t), 20)
         # check that the variable you saved after calling the function is a list
-        self.assertTrue(t, list)
+        self.assertTrue(type(t) == list)
         # check that each item in the list is a tuple
         for item in t:
-            self.assertTrue(item, type(tuple))
+            self.assertTrue(type(item) == tuple)
         # check that the first book and author tuple is correct (open search_results.htm and find it)
         self.assertEqual(t[0], ("Harry Potter and the Deathly Hallows (Harry Potter, #7)", "J.K. Rowling"))
         # check that the last title is correct (open search_results.htm and find it)
         self.assertEqual(t[-1], ("Harry Potter: The Prequel (Harry Potter, #0.5)", "J.K. Rowling"))
     def test_get_search_links(self):
         # check that TestCases.search_urls is a list
-        self.assertTrue(self.search_urls, list)
+        self.assertTrue(type(self.search_urls) == list)
         # check that the length of TestCases.search_urls is correct (10 URLs)
         self.assertEqual(len(self.search_urls), 10)
 
         # check that each URL in the TestCases.search_urls is a string
-        
+        for url in self.search_urls:
+            self.assertTrue(type(url) == str)
         # check that each URL contains the correct url for Goodreads.com followed by /book/show/
         
 
@@ -163,7 +177,7 @@ class TestCases(unittest.TestCase):
         for url in self.search_urls:
             summaries.append(get_book_summary(url))
         # check that the number of book summaries is correct (10)
-
+        self.assertEqual(len(summaries), 10)
             # check that each item in the list is a tuple
 
             # check that each tuple has 3 elements
@@ -177,17 +191,18 @@ class TestCases(unittest.TestCase):
         
     def test_summarize_best_books(self):
         # call summarize_best_books and save it to a variable
-
+        best = summarize_best_books('best_books_2020.htm')
         # check that we have the right number of best books (20)
-
+        self.assertEqual(len(best), 20)
             # assert each item in the list of best books is a tuple
-
+        for i in best:
+            self.assertTrue(type(i) == tuple)
             # check that each tuple has a length of 3
-
+            self.assertEqual(len(i), 3)
         # check that the first tuple is made up of the following 3 strings:'Fiction', "The Midnight Library", 'https://www.goodreads.com/choiceawards/best-fiction-books-2020'
 
         # check that the last tuple is made up of the following 3 strings: 'Picture Books', 'Antiracist Baby', 'https://www.goodreads.com/choiceawards/best-picture-books-2020'
-        pass
+        
 
     def test_write_csv(self):
         # call get_titles_from_search_results on search_results.htm and save the result to a variable
