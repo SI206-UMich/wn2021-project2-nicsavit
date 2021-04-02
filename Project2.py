@@ -142,7 +142,17 @@ def extra_credit(filepath):
     Please see the instructions document for more information on how to complete this function.
     You do not have to write test cases for this function.
     """
-    pass
+    with open(filepath, 'r') as f:
+        fread = f.read()
+        soup = BeautifulSoup(fread, 'lxml')
+    entities = []
+    anchor = soup.find('div', class_ = 'readable stacked')
+    description = anchor.find('span', id = 'freeText4791443123668479528')
+    exp = r'\b(?:[A-Z]\w{2,}) (?:[A-Z]\w*)(?: (?:[A-Z]\w*))*'
+    regex = re.findall(exp, description.text)
+    for i in regex:
+        entities.append(i)
+    return entities
 
 class TestCases(unittest.TestCase):
 
@@ -232,7 +242,8 @@ class TestCases(unittest.TestCase):
         # check that the last row is 'Harry Potter: The Prequel (Harry Potter, #0.5)', 'J.K. Rowling'
             self.assertEqual(csv_lines[-1], ['Harry Potter: The Prequel (Harry Potter, #0.5)', 'J.K. Rowling'])
         
-
+    def test_ec(self):
+        extra_credit('extra_credit.htm')
 if __name__ == '__main__':
     print(extra_credit("extra_credit.htm"))
     unittest.main(verbosity=2)
