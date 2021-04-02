@@ -77,8 +77,8 @@ def get_book_summary(book_url):
     a = author.text.strip()
     pages = soup.find('span', itemprop = "numberOfPages")
     p = pages.text.strip()
-    
-    return (t, a, p)
+    print((t,a,int(p[:-5])))
+    return (t, a, int(p[:-5]))
     
 def summarize_best_books(filepath):
     """
@@ -105,7 +105,7 @@ def summarize_best_books(filepath):
         t = titles_main['alt']
         url = category.find('a')['href']
         tup_list.append((c.text.strip(), t, url))
-    print(tup_list)
+    
     return tup_list
 def write_csv(data, filename):
     """
@@ -168,27 +168,31 @@ class TestCases(unittest.TestCase):
         for url in self.search_urls:
             self.assertTrue(type(url) == str)
         # check that each URL contains the correct url for Goodreads.com followed by /book/show/
-        
+            self.assertTrue("https://www.goodreads.com/book/show/" in url)
 
     def test_get_book_summary(self):
         # create a local variable – summaries – a list containing the results from get_book_summary()
         # for each URL in TestCases.search_urls (should be a list of tuples)
+        
         summaries = []
         for url in self.search_urls:
             summaries.append(get_book_summary(url))
+        
+            # check that each item in the list is a tuple
+        for i in summaries:
+            self.assertTrue(type(i)== tuple)
+            # check that each tuple has 3 elements
+            self.assertEqual(len(i), 3)
+            # check that the first two elements in the tuple are string
+            self.assertTrue(type(i[0]) == str)
+            self.assertTrue(type(i[1]) == str)
+            # check that the third element in the tuple, i.e. pages is an int
+            self.assertTrue(type(i[2]) == int)
+            # check that the first book in the search has 337 pages
+        self.assertTrue(summaries[0][2]== 337)
         # check that the number of book summaries is correct (10)
         self.assertEqual(len(summaries), 10)
-            # check that each item in the list is a tuple
 
-            # check that each tuple has 3 elements
-
-            # check that the first two elements in the tuple are string
-
-            # check that the third element in the tuple, i.e. pages is an int
-
-            # check that the first book in the search has 337 pages
-
-        
     def test_summarize_best_books(self):
         # call summarize_best_books and save it to a variable
         best = summarize_best_books('best_books_2020.htm')
